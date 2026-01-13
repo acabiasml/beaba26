@@ -1,0 +1,1 @@
+Contribuições são bem-vindas sob GPL v3.

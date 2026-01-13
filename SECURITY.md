@@ -1,0 +1,1 @@
+Relate vulnerabilidades de forma responsável.
