@@ -13,6 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         //
     })
+    ->withMiddleware(function ($middleware) {
+    $middleware->append(\App\Http\Middleware\EnsureUserIsActive::class);
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();

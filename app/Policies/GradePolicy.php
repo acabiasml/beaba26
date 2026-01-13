@@ -9,10 +9,16 @@ class GradePolicy
 {
     public function create(User $user, Grade $grade): bool
     {
-        return ! $grade->period
-            ->schoolYear
-            ->is_closed;
+        if ($user->role !== 'professor') {
+            return false;
+        }
+
+        return $grade->classComponent
+            ->teachers()
+            ->where('users.id', $user->id)
+            ->exists();
     }
+
 
     public function update(User $user, Grade $grade): bool
     {

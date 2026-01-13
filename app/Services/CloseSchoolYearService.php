@@ -24,6 +24,94 @@ class CloseSchoolYearService
         });
     }
 
+    protected function validate1800_1200(int $fgb, int $flex, int $total): void
+    {
+        if ($fgb < 1800) {
+            throw new \Exception("FGB insuficiente: {$fgb}h (mínimo 1800h).");
+        }
+
+        if ($flex < 1200) {
+            throw new \Exception("Itinerários + Técnica insuficientes: {$flex}h (mínimo 1200h).");
+        }
+
+        if ($total < 3000) {
+            throw new \Exception("Carga horária total insuficiente: {$total}h (mínimo 3000h).");
+        }
+    }
+
+    protected function validate2400_600(int $fgb, int $flex, int $total): void
+    {
+        if ($fgb < 2400) {
+            throw new \Exception("FGB insuficiente: {$fgb}h (mínimo 2400h).");
+        }
+
+        if ($flex < 600) {
+            throw new \Exception("Itinerários + Técnica insuficientes: {$flex}h (mínimo 600h).");
+        }
+
+        if ($total < 3000) {
+            throw new \Exception("Carga horária total insuficiente: {$total}h (mínimo 3000h).");
+        }
+    }
+
+    protected function validateLegalWorkload(SchoolYear $schoolYear): void
+    {
+        $total = 0;
+        $fgb = 0;
+        $itinerario = 0;
+        $tecnica = 0;
+
+        foreach ($schoolYear->classes as $class) {
+            foreach ($class->components as $classComponent) {
+
+                $hours = $classComponent->lessons()->count();
+                $type = $classComponent->component->curricular_type;
+
+                $total += $hours;
+
+                match ($type) {
+                    'formacao_geral' => $fgb += $hours,
+                    'itinerario' => $itinerario += $hours,
+                    'tecnica_profissional' => $tecnica += $hours,
+                    default => null,
+                };
+            }
+        }
+
+        // ENSINO FUNDAMENTAL
+        if ($schoolYear->education_stage === 'fundamental') {
+            if ($total < 800) {
+                throw new \Exception(
+                    "Carga horária insuficiente no Ensino Fundamental ({$total}h / mínimo 800h)."
+                );
+            }
+            return;
+        }
+
+        // ENSINO MÉDIO
+        if ($schoolYear->education_stage === 'medio') {
+
+            if (! $schoolYear->workload_rule) {
+                throw new \Exception(
+                    'Ano letivo do Ensino Médio sem regra de carga horária definida.'
+                );
+            }
+
+            if ($schoolYear->uses1800_1200()) {
+                $this->validate1800_1200($fgb, $itinerario + $tecnica, $total);
+                return;
+            }
+
+            if ($schoolYear->uses2400_600()) {
+                $this->validate2400_600($fgb, $itinerario + $tecnica, $total);
+                return;
+            }
+
+            throw new \Exception('Regra de carga horária desconhecida.');
+        }
+    }
+
+
     protected function validatePreConditions(SchoolYear $schoolYear): void
     {
         if ($schoolYear->periods()->count() === 0) {
@@ -33,6 +121,7 @@ class CloseSchoolYearService
         }
 
         $this->validateClasses($schoolYear);
+        $this->validateLegalWorkload($schoolYear);
     }
 
     protected function generateStudentHistories(SchoolYear $schoolYear): void

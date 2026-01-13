@@ -13,6 +13,11 @@ class SchoolYear extends Model
         'closed_at' => 'datetime',
     ];
 
+    protected $attributes = [
+        // padrão para novos anos do Ensino Médio
+        'workload_rule' => 'medio_2400_600',
+    ];
+
     public function school()
     {
         return $this->belongsTo(School::class);
@@ -26,5 +31,18 @@ class SchoolYear extends Model
     public function classes()
     {
         return $this->hasMany(ClassRoom::class);
+    }
+
+    /**
+     * Helpers semânticos (opcional, mas recomendável)
+     */
+    public function uses1800_1200(): bool
+    {
+        return $this->workload_rule === 'medio_1800_1200';
+    }
+
+    public function uses2400_600(): bool
+    {
+        return $this->workload_rule === 'medio_2400_600';
     }
 }

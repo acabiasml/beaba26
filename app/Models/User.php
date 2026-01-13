@@ -20,7 +20,10 @@ class User extends Authenticatable
         'password',
         'role',
         'archived',
+        'auth_provider',
+        'provider_id',
     ];
+
 
     /**
      * Atributos ocultos na serialização
