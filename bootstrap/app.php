@@ -10,11 +10,14 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
-        //
-    })
     ->withMiddleware(function ($middleware) {
-    $middleware->append(\App\Http\Middleware\EnsureUserIsActive::class);
+        $middleware->alias([
+            'active' => \App\Http\Middleware\EnsureUserIsActive::class,
+        ]);
+
+        $middleware->redirectGuestsTo(
+            fn () => route('google.login')
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

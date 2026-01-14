@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Event;
 use App\Listeners\LogUserLogin;
 use App\Listeners\LogUserLogout;
 use Illuminate\Support\Facades\Gate;
+use App\Support\SystemState;
+use Illuminate\Support\Facades\View;
+use App\Observers\AuditObserver;
+use Illuminate\Support\Facades\Schema;
 
 
 
@@ -44,10 +48,27 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('apoio', fn ($user) => $user->role === 'apoio');
 
         // Auditoria
-        Grade::observe(AuditObserver::class);
-        Attendance::observe(AuditObserver::class);
-        Diary::observe(AuditObserver::class);
-        SchoolYear::observe(AuditObserver::class);
-        User::observe(AuditObserver::class);
+        if (class_exists(\App\Models\Grade::class)) {
+            \App\Models\Grade::observe(AuditObserver::class);
+        }
+
+        if (class_exists(\App\Models\Attendance::class)) {
+            \App\Models\Attendance::observe(AuditObserver::class);
+        }
+
+        if (class_exists(\App\Models\Diary::class)) {
+            \App\Models\Diary::observe(AuditObserver::class);
+        }
+
+        if (class_exists(\App\Models\SchoolYear::class)) {
+            \App\Models\SchoolYear::observe(AuditObserver::class);
+        }
+
+        if (class_exists(\App\Models\User::class)) {
+            \App\Models\User::observe(AuditObserver::class);
+        }
+
+
+        View::share('isFirstAccess', SystemState::isFirstAccess());
     }
 }

@@ -15,10 +15,17 @@ class EnsureUserIsActive
      */
     public function handle($request, Closure $next)
     {
-        if (auth()->check() && auth()->user()->archived) {
+        // Se não estiver autenticado, deixa o auth middleware cuidar
+        if (! auth()->check()) {
+            return $next($request);
+        }
+
+        // Se estiver autenticado, mas arquivado
+        if (auth()->user()->archived) {
             abort(403, 'Usuário desativado.');
         }
 
         return $next($request);
     }
+
 }
