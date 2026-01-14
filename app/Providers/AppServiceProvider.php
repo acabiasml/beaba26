@@ -42,5 +42,12 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('professor', fn ($user) => $user->role === 'professor');
         Gate::define('aluno', fn ($user) => $user->role === 'aluno');
         Gate::define('apoio', fn ($user) => $user->role === 'apoio');
+
+        // Auditoria
+        Grade::observe(AuditObserver::class);
+        Attendance::observe(AuditObserver::class);
+        Diary::observe(AuditObserver::class);
+        SchoolYear::observe(AuditObserver::class);
+        User::observe(AuditObserver::class);
     }
 }
